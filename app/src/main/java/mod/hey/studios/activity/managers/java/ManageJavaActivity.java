@@ -191,16 +191,17 @@ public class ManageJavaActivity extends BaseAppCompatActivity {
 
             Button positiveButton = ((androidx.appcompat.app.AlertDialog) dialogInterface).getButton(DialogInterface.BUTTON_POSITIVE);
             positiveButton.setOnClickListener(view -> {
-                if (Helper.getText(inputText).isEmpty()) {
+                String name = Helper.getText(inputText);
+                if (name.isEmpty()) {
                     SketchwareUtil.toastError("Invalid file name");
                     return;
                 }
 
-                String name = Helper.getText(inputText);
                 String packageName = getCurrentPkgName();
-
                 String extension;
                 String newFileContent;
+                boolean isFolder = false;
+
                 int checkedChipId = dialogBinding.chipGroupTypes.getCheckedChipId();
                 if (checkedChipId == R.id.chip_java_class) {
                     newFileContent = String.format(CLASS_TEMPLATE, packageName, name);
@@ -215,20 +216,32 @@ public class ManageJavaActivity extends BaseAppCompatActivity {
                     newFileContent = String.format(KT_ACTIVITY_TEMPLATE, packageName, name);
                     extension = ".kt";
                 } else if (checkedChipId == R.id.chip_folder) {
-                    FileUtil.makeDir(new File(current_path, name).getAbsolutePath());
-                    refresh();
-                    SketchwareUtil.toast("Folder was created successfully");
-                    dialog.dismiss();
-                    return;
+                    isFolder = true;
+                    extension = "";
+                    newFileContent = "";
                 } else {
                     SketchwareUtil.toast("Select a file type");
                     return;
                 }
+                String targetPath = new File(current_path, name + extension).getAbsolutePath();
+                if (FileUtil.isExistFile(targetPath)) {
+                    SketchwareUtil.toastError((isFolder ? "Folder" : "File") + " already exists");
+                    return;
+                }
 
-                FileUtil.writeFile(new File(current_path, name + extension).getAbsolutePath(), newFileContent);
-                refresh();
-                SketchwareUtil.toast("File was created successfully");
-                dialog.dismiss();
+                if (isFolder) {
+                    FileUtil.makeDir(targetPath);
+                } else {
+                    FileUtil.writeFile(targetPath, newFileContent);
+                }
+
+                if (FileUtil.isExistFile(targetPath)) {
+                    refresh();
+                    SketchwareUtil.toast((isFolder ? "Folder" : "File") + " was created successfully");
+                    dialog.dismiss();
+                } else {
+                    SketchwareUtil.toastError("Failed to create " + (isFolder ? "folder" : "file"));
+                }
             });
 
             dialog.show();
