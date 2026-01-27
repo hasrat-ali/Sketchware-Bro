@@ -248,7 +248,7 @@ public class ExtraMenuBean {
         MaterialAlertDialogBuilder dialog = new MaterialAlertDialogBuilder(logicEditor);
 
         String currentVal = menu.getArgValue().toString();
-        String[] selectedItems = currentVal.split(Pattern.quote("|"));
+        String[] selectedItems = currentVal.split(Pattern.quote(","));
         ArrayList<String> selectedList = new ArrayList<>(Arrays.asList(selectedItems));
 
         boolean[] checkedItems = new boolean[permission.length];
@@ -265,7 +265,7 @@ public class ExtraMenuBean {
                 .setMultiChoiceItems(permission, checkedItems, (dialogInterface, which, isChecked) ->
                         checkedItems[which] = isChecked)
                 .setPositiveButton(R.string.common_word_select, (v, which) -> {
-                    StringJoiner joiner = new StringJoiner("|");
+                    StringJoiner joiner = new StringJoiner(",");
                     for (int i = 0; i < permission.length; i++) {
                         if (checkedItems[i]) {
                             joiner.add(permission[i]);
